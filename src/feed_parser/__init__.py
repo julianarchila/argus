@@ -1,0 +1,1 @@
+from .eltiempo import ElTiempoRSSParser
