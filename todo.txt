@@ -1,0 +1,19 @@
+- Function que tome un articulo y genere el embedding 
+- Function que guarde el embedding y una referencia al articulo (id, embbedding, article_id)
+
+
+-- Cron job
+- Haga kmeans con los embeddings
+- Coja cada cluster y guardar los articulos en una tabla
+- Funcion que para cada articulo genere un diff respecto a los demas articulos del cluster (Usando un llm)
+- Function que guarde el diff y una referencia al articulo (id, diff, article_id)
+
+
+
+consulta(url)
+  return {
+    diffs: List[{
+      artiulo_url: str,
+      diff: str
+      }]
+  }
