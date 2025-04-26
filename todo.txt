@@ -3,8 +3,8 @@
 
 
 -- Cron job
-- Haga kmeans con los embeddings
-- Coja cada cluster y guardar los articulos en una tabla
+- Haga kmeans con los embeddings DONE
+- Coja cada cluster y guardar los articulos en una tabla DONE
 - Funcion que para cada articulo genere un diff respecto a los demas articulos del cluster (Usando un llm)
 - Function que guarde el diff y una referencia al articulo (id, diff, article_id)
 

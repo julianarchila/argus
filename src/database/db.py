@@ -2,7 +2,7 @@ import sqlite3
 import os
 import json
 from datetime import datetime
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
 
 from src.utils import logger
@@ -48,6 +48,25 @@ def init_db():
         CREATE TABLE IF NOT EXISTS site_tracking (
             site_name TEXT PRIMARY KEY,
             last_processed TEXT NOT NULL
+        )
+        ''')
+         # Create embeddings table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS embeddings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            article_id INTEGER NOT NULL,
+            embedding TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(article_id) REFERENCES articles(id)
+        )
+        ''')
+        # Create article_clusters table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS article_clusters (
+            article_id INTEGER PRIMARY KEY,
+            cluster INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(article_id) REFERENCES articles(id)
         )
         ''')
         
@@ -202,6 +221,56 @@ def save_embedding(article_id: int, embedding: List[float]) -> bool:
     except Exception as e:
         conn.rollback()
         logger.error(f"Error saving embedding for article {article_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
+
+def get_all_embeddings() -> List[Tuple[int, int, List[float]]]:
+    """Retrieve all embeddings from the database.
+
+    Returns:
+        A list of tuples: (record_id, article_id, embedding_vector)
+    """
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT id, article_id, embedding FROM embeddings"
+        )
+        rows = cursor.fetchall()
+        results: List[Tuple[int, int, List[float]]] = []
+        for row in rows:
+            record_id = row["id"]
+            article_id = row["article_id"]
+            vector = json.loads(row["embedding"])
+            results.append((record_id, article_id, vector))
+        return results
+    except Exception as e:
+        logger.error(f"Error retrieving embeddings: {e}")
+        raise
+    finally:
+        conn.close()
+
+def save_cluster_assignment(article_id: int, cluster: int) -> bool:
+    """Assign or update a cluster label for an article."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            INSERT INTO article_clusters (article_id, cluster)
+            VALUES (?, ?)
+            ON CONFLICT(article_id) DO UPDATE SET cluster = excluded.cluster
+            ''',
+            (article_id, cluster)
+        )
+        conn.commit()
+        logger.info(f"Saved cluster {cluster} for article_id {article_id}")
+        return True
+    except Exception as e:
+        conn.rollback()
+        logger.error(f"Error saving cluster assignment for article_id {article_id}: {e}")
         return False
     finally:
         conn.close()
