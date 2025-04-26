@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
-
 from src.utils import logger
 
 # Database file path
@@ -65,6 +64,16 @@ def init_db():
         CREATE TABLE IF NOT EXISTS article_clusters (
             article_id INTEGER PRIMARY KEY,
             cluster INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(article_id) REFERENCES articles(id)
+        )
+        ''')
+         # Create article_diffs table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS article_diffs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            article_id INTEGER NOT NULL,
+            diff TEXT NOT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(article_id) REFERENCES articles(id)
         )
@@ -271,6 +280,27 @@ def save_cluster_assignment(article_id: int, cluster: int) -> bool:
     except Exception as e:
         conn.rollback()
         logger.error(f"Error saving cluster assignment for article_id {article_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
+def save_diff(article_id: int, diff: str) -> bool:
+    """Save a generated diff for an article."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            '''
+            INSERT INTO article_diffs (article_id, diff) VALUES (?, ?)
+            ''',
+            (article_id, diff)
+        )
+        conn.commit()
+        logger.info(f"Saved diff for article_id {article_id}")
+        return True
+    except Exception as e:
+        conn.rollback()
+        logger.error(f"Error saving diff for article_id {article_id}: {e}")
         return False
     finally:
         conn.close()
