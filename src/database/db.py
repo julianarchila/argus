@@ -71,10 +71,11 @@ def save_articles(articles: List[Dict[str, Any]], site_name: str) -> int:
         Number of articles saved
     """
     if not articles:
-        return 0
+           return 0, []
         
     conn = get_db_connection()
     saved_count = 0
+    article_ids: List[int] = []
     
     try:
         cursor = conn.cursor()
@@ -102,19 +103,26 @@ def save_articles(articles: List[Dict[str, Any]], site_name: str) -> int:
                 keywords_json
             ))
             
+       # Determine the article_id
             if cursor.rowcount > 0:
                 saved_count += 1
-        
+                article_id = cursor.lastrowid
+            else:
+                # Already existed: fetch its ID
+                cursor.execute("SELECT id FROM articles WHERE url = ?", (article["url"],))
+                row = cursor.fetchone()
+                article_id = row["id"] if row else None
+            if article_id:
+                article_ids.append(article_id)
         conn.commit()
-        logger.info(f"Saved {saved_count} articles for site {site_name}")
+        logger.info(f"Saved {saved_count} new articles for site {site_name}")
     except Exception as e:
         conn.rollback()
         logger.error(f"Error saving articles: {e}")
         raise
     finally:
         conn.close()
-    
-    return saved_count
+    return saved_count, article_ids
 
 def get_last_processed_date(site_name: str) -> Optional[datetime]:
     """
@@ -175,3 +183,25 @@ def update_last_processed_date(site_name: str, last_processed: datetime) -> bool
         return False
     finally:
         conn.close() 
+
+def save_embedding(article_id: int, embedding: List[float]) -> bool:
+    """Save an embedding vector for an article."""
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        emb_json = json.dumps(embedding)
+        cursor.execute(
+            '''
+            INSERT INTO embeddings (article_id, embedding) VALUES (?, ?)
+            ''',
+            (article_id, emb_json)
+        )
+        conn.commit()
+        logger.info(f"Saved embedding for article_id {article_id}")
+        return True
+    except Exception as e:
+        conn.rollback()
+        logger.error(f"Error saving embedding for article {article_id}: {e}")
+        return False
+    finally:
+        conn.close()
