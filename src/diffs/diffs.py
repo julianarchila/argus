@@ -8,15 +8,11 @@ def generate_diff(article: Article, other_texts: List[str], model: str = "gpt-4"
     """
     Generate a textual diff for `article` against a list of other articles' content.
 
-    A "diff" here is a summary of differences and unique points of the target article
-    when compared to similar articles in the same cluster.
     """
     # Build a comparison prompt
     others_combined = "\n\n---\n\n".join(other_texts)
     prompt = f"""
-You are an assistant that extracts the distinctive points of a target article
-compared to related articles. Provide a diff-like summary highlighting
-unique additions, changes, or perspectives in the target article.
+
 
 ---
 TARGET ARTICLE:

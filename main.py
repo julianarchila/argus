@@ -10,6 +10,11 @@ from src.article_parser.eltiempo import ElTiempoArticleParser
 from src.database import init_db, get_last_processed_date, update_last_processed_date, save_articles
 from src.utils import logger
 
+from fastapi import FastAPI, HTTPException, Query
+from typing import List
+from src.api.schemas import RelatedArticleDTO
+from src.database.db import get_db_connection
+
 
 class NewsSiteConfig(NamedTuple):
     """Configuration for a news site crawler."""
@@ -138,6 +143,62 @@ def process_site(registry: NewsRegistry, site_name: str) -> None:
         process_feed(site_config)
     else:
         logger.error(f"No configuration found for site: {site_name}")
+
+#FASTAPI CONTROLLER
+app = FastAPI(
+    title="Argus Related-Articles API",
+    version="1.0",
+)
+
+@app.get("/api/related", response_model=List[RelatedArticleDTO])
+def get_related(url: str = Query(..., description="URL of the article to find related versions")):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 1) Search for the main article by URL
+    cursor.execute("SELECT id FROM articles WHERE url = ?", (url,))
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail=f"Article not found for URL: {url}")
+    article_id = row["id"]
+
+    # 2) Check its cluster
+    cursor.execute(
+        "SELECT cluster FROM article_clusters WHERE article_id = ?", (article_id,)
+    )
+    row = cursor.fetchone()
+    if not row:
+        conn.close()
+        # No cluster assigned yet → empty list
+        return []
+    cluster = row["cluster"]
+
+    # 3) Retrieve peers from the same cluster (excluding the primary)
+    cursor.execute("""
+        SELECT 
+            a.id, a.url, a.title, a.site_name, 
+            COALESCE(d.diff, '') AS diff
+        FROM articles AS a
+        JOIN article_clusters AS c ON a.id = c.article_id
+        LEFT JOIN article_diffs AS d ON a.id = d.article_id
+        WHERE c.cluster = ? AND a.id <> ?
+    """, (cluster, article_id))
+    peers = cursor.fetchall()
+    conn.close()
+
+    # 4) Mapea a DTOs
+    result = [
+        RelatedArticleDTO(
+            id    = p["id"],
+            url   = p["url"],
+            title = p["title"],
+            site_name = p["site_name"],
+            diff  = p["diff"]
+        )
+        for p in peers
+    ]
+    return result
 
 
 if __name__ == "__main__":
