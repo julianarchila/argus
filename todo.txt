@@ -1,5 +1,5 @@
-- Function que tome un articulo y genere el embedding 
-- Function que guarde el embedding y una referencia al articulo (id, embbedding, article_id)
+- Function que tome un articulo y genere el embedding DONE
+- Function que guarde el embedding y una referencia al articulo (id, embbedding, article_id) DONE
 
 
 -- Cron job
