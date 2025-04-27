@@ -6,7 +6,9 @@ from typing import Any, Dict, List, Type, Optional, NamedTuple
 from src.feed_parser.base import RSSFeedParser
 from src.article_parser.base import ArticleParser, Article
 from src.feed_parser.eltiempo import ElTiempoRSSParser
+from src.feed_parser.elpais import ElPaisRSSParser
 from src.article_parser.eltiempo import ElTiempoArticleParser
+from src.article_parser.elpais import ElPaisArticleParser
 from src.database import init_db, get_last_processed_date, update_last_processed_date, save_articles
 from src.utils import logger
 
@@ -115,6 +117,16 @@ def register_default_sites(registry: NewsRegistry) -> None:
             feed_url="https://www.eltiempo.com/sitemap-google-news.xml",
             feed_parser_class=ElTiempoRSSParser,
             article_parser_class=ElTiempoArticleParser
+        )
+    )
+
+    #  El País
+    registry.register_site(
+        NewsSiteConfig(
+            name="elpais",
+            feed_url="https://elpais.com/sitemap.xml",
+            feed_parser_class=ElPaisRSSParser,
+            article_parser_class=ElPaisArticleParser
         )
     )
     
