@@ -173,3 +173,37 @@ pyrightconfig.json
 
 # Date folder
 data
+
+
+
+
+
+### Typescript
+
+# dependencies
+node_modules
+
+# sst
+.sst
+
+# tmp files
+.#*
+
+# env 
+.env*.local
+.env
+.env.prod
+
+# opennext
+.open-next
+
+# misc
+.DS_Store
+
+
+# Sqlite
+*.sqlite
+
+# Turbo
+.turbo
+
