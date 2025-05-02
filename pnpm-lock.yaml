@@ -15,9 +15,21 @@ importers:
       '@types/aws-lambda':
         specifier: 8.10.149
         version: 8.10.149
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.3
       turbo:
         specifier: ^2.5.2
         version: 2.5.2
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
+  apps/functions:
+    devDependencies:
+      '@types/aws-lambda':
+        specifier: 8.10.149
+        version: 8.10.149
 
 packages:
 
@@ -30,6 +42,9 @@ packages:
 
   '@types/aws-lambda@8.10.149':
     resolution: {integrity: sha512-NXSZIhfJjnXqJgtS7IwutqIF/SOy1Wz5Px4gUY1RWITp3AYTyuJS4xaXr/bIJY1v15XMzrJ5soGnPM+7uigZjA==}
+
+  '@types/node@22.15.3':
+    resolution: {integrity: sha512-lX7HFZeHf4QG/J7tBZqrCAXwz9J5RD56Y6MpP0eJkka8p+K0RY/yBTW7CYFJ4VGCclxqOLKmiGP5juQc6MKgcw==}
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
@@ -504,6 +519,14 @@ packages:
     resolution: {integrity: sha512-OZs6gsjF4vMp32qrCbiVSkrFmXtG/AZhY3t0iAMrMBiAZyV9oALtXO8hsrHbMXF9x6L3grlFuwW2oAz7cav+Gw==}
     engines: {node: '>= 0.6'}
 
+  typescript@5.8.3:
+    resolution: {integrity: sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
   unpipe@1.0.0:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
@@ -567,6 +590,10 @@ snapshots:
   '@tsconfig/bun@1.0.7': {}
 
   '@types/aws-lambda@8.10.149': {}
+
+  '@types/node@22.15.3':
+    dependencies:
+      undici-types: 6.21.0
 
   accepts@2.0.0:
     dependencies:
@@ -1084,6 +1111,10 @@ snapshots:
       content-type: 1.0.5
       media-typer: 1.1.0
       mime-types: 3.0.1
+
+  typescript@5.8.3: {}
+
+  undici-types@6.21.0: {}
 
   unpipe@1.0.0: {}
 

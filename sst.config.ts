@@ -7,7 +7,19 @@ export default $config({
       removal: input?.stage === "production" ? "retain" : "remove",
       protect: ["production"].includes(input?.stage),
       home: "aws",
+      providers: {
+        aws: {
+          profile: input.stage === "production" ? "prod" : "dev",
+        },
+      },
+
     };
   },
-  async run() {},
+  async run() {
+
+    new sst.aws.Function("TestFunction", {
+      handler: "apps/functions/src/test/index.handler",
+      url: true
+    })
+  },
 });
