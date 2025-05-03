@@ -5,6 +5,14 @@
 
 declare module "sst" {
   export interface Resource {
+    "DBToken": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "DBUrl": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "TestFunction": {
       "name": string
       "type": "sst.aws.Function"

@@ -3,19 +3,22 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "db": "sst shell drizzle-kit"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.7.1",
   "dependencies": {
+    "@libsql/client": "^0.15.4",
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
+    "drizzle-orm": "^0.43.1",
     "turndown": "^7.2.0"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.35",
-    "@types/turndown": "^5.0.5"
+    "@types/turndown": "^5.0.5",
+    "drizzle-kit": "^0.31.1"
   }
 }

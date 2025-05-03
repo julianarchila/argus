@@ -11,6 +11,6 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable", "esnext"],
     "target": "ES2022"
   },
-  "include": ["src/**/*", "sst-env.d.ts"]
+  "include": ["src/**/*", "drizzle.config.ts", "sst-env.d.ts"]
 }
 

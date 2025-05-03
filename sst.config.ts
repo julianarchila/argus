@@ -16,6 +16,7 @@ export default $config({
     };
   },
   async run() {
+    await import("./infra/secrets")
 
     new sst.aws.Function("TestFunction", {
       handler: "apps/functions/src/test/index.handler",

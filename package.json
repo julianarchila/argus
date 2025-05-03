@@ -14,6 +14,7 @@
     "sst": "3.14.11"
   },
   "devDependencies": {
+    "@tsconfig/node20": "^20.1.5",
     "@types/aws-lambda": "8.10.149",
     "@types/node": "^22.15.3",
     "turbo": "^2.5.2",
