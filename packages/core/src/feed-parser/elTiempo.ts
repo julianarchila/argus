@@ -1,14 +1,23 @@
 import { ELTIEMPO_FEED_URL, FeedItem, FeedParser } from "./types";
-import { cherrioFromUrl } from "./utils";
+import { cherrioFromUrl } from "../utils";
 
-
+/**
+ * Feed parser for El Tiempo news source
+ * Fetches and parses the XML feed from El Tiempo's sitemap
+ */
 export const elTiempoFeedParser: FeedParser = async () => {
-  const $ = await cherrioFromUrl(ELTIEMPO_FEED_URL);
+  const $ = await cherrioFromUrl({
+    url: ELTIEMPO_FEED_URL,
+    xml: true
+  });
   return _elTiempoCherrioParse($);
 }
 
-
-// internal function so writing tests is easier
+/**
+ * Parses El Tiempo XML feed content using Cheerio
+ * @param {cheerio.Root} $ - Cheerio instance loaded with XML content
+ * @internal - Used internally to facilitate testing
+ */
 async function _elTiempoCherrioParse($: cheerio.Root): Promise<FeedItem[]> {
   const items: FeedItem[] = [];
   $('url').each((_, el) => {
