@@ -1,4 +1,4 @@
-import { drizzle as drizzle_libsql } from "drizzle-orm/libsql"
+import { drizzle as drizzle_libsql } from "drizzle-orm/libsql/web"
 import { Resource } from "sst"
 
 let db: ReturnType<typeof createClient> | undefined

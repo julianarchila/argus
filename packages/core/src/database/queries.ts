@@ -56,10 +56,15 @@ export const get_last_proccessed_date = async (site_name: string) => {
 export const update_last_proccessed_date = async (site_name: string, lastProcessedDate: Date) => {
   const db = getDb()
 
-  await db.update(siteTrackingTable)
-    .set({
+  await db.insert(siteTrackingTable).values({
+    site_name: site_name,
+    last_processed: lastProcessedDate,
+  }).onConflictDoUpdate({
+    target: siteTrackingTable.site_name,
+    set: {
       last_processed: lastProcessedDate,
-    }).where(eq(siteTrackingTable.site_name, site_name))
+    }
+  })
 
 }
 

@@ -10,7 +10,10 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.7.1",
+  "dependencies": {
+    "@argus/core": "workspace:*"
+  },
   "devDependencies": {
-    "@types/aws-lambda": "8.10.149"
+    "@types/aws-lambda": "8.10.148"
   }
 }

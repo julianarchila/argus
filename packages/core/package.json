@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "db": "sst shell drizzle-kit"
+    "db": "sst shell drizzle-kit",
+    "pad": "sst shell tsx ./src/pad.ts"
   },
+  "exports": {
+    "./feed-parser/*": "./src/feed-parser/*.ts"
+  },
+
   "keywords": [],
   "author": "",
   "license": "ISC",

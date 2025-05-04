@@ -1,4 +1,5 @@
 import { elTiempoArticleParser } from "./article-parser/elTiempo";
+import { update_last_proccessed_date } from "./database/queries";
 import { elTiempoFeedParser } from "./feed-parser/elTiempo";
 import { parseFeed } from "./feed-parser/feed-parser";
 
@@ -24,7 +25,15 @@ async function testElTiempoArticleParser() {
 
 
 async function main() {
-  await testElTiempoArticleParser();
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  console.log("updating last processed date for elTiempo");
+  await update_last_proccessed_date("elTiempo", yesterday);
+  console.log("done");
 }
 
-await main();
+(async () => {
+  await main();
+})();
+
