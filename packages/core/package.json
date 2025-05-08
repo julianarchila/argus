@@ -7,7 +7,16 @@
     "pad": "sst shell tsx ./src/pad.ts"
   },
   "exports": {
-    "./feed-parser/*": "./src/feed-parser/*.ts"
+    "./parsers": {
+      "import": "./src/parsers/index.ts",
+      "require": "./src/parsers/index.ts",
+      "types": "./src/parsers/index.ts"
+    },
+    "./database": {
+      "import": "./src/database/index.ts",
+      "require": "./src/database/index.ts",
+      "types": "./src/database/index.ts"
+    }
   },
 
   "keywords": [],
