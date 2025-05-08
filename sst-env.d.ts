@@ -5,6 +5,11 @@
 
 declare module "sst" {
   export interface Resource {
+    "ArgusEventBus": {
+      "arn": string
+      "name": string
+      "type": "sst.aws.Bus"
+    }
     "DBToken": {
       "type": "sst.sst.Secret"
       "value": string
@@ -12,11 +17,6 @@ declare module "sst" {
     "DBUrl": {
       "type": "sst.sst.Secret"
       "value": string
-    }
-    "TestFunction": {
-      "name": string
-      "type": "sst.aws.Function"
-      "url": string
     }
   }
 }

@@ -1,3 +1,4 @@
+import * as events from "@argus/core/events";
 import type { SiteFeedResult } from "@argus/core/parsers";
 import * as parsers from "@argus/core/parsers";
 
@@ -8,6 +9,22 @@ export const handler = async (event: any, context: any) => {
 
     // Log results for each site
     for (const result of results) {
+
+      if (result.items.length > 0) {
+        await events.publishEvent("NewArticlesEvent", "argus.feedcron", {
+          siteName: result.siteName,
+          articles: result.items.map(item => ({
+            url: item.url,
+            title: item.title,
+            publicationDate: item.publicationDate.toISOString(),
+            lastModified: item.lastModified?.toISOString(),
+            keywords: item.keywords
+          }))
+        });
+        console.log(`Published event for ${result.siteName} with ${result.items.length} new articles`);
+
+      }
+
       console.log({
         site_name: result.siteName,
         lastProcessed: result.lastProcessed,
@@ -29,7 +46,7 @@ export const handler = async (event: any, context: any) => {
     };
   } catch (error) {
     console.error("Error processing feeds:", error);
-    
+
     return {
       statusCode: 500,
       headers: {

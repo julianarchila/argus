@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { getDb } from ".";
+import { getDb } from "./client";
 import { articlesTable, siteTrackingTable, InsertArticle } from "./schema.sql"
 
 /**
@@ -27,6 +27,28 @@ export const save_articles = async (articles: InsertArticle[], site_name: string
       .run();
   }
 
+}
+
+// Save article to database
+export async function saveArticle(article: InsertArticle) {
+  const db = getDb()
+  try {
+    const result = await db.insert(articlesTable).values({
+      url: article.url,
+      title: article.title || null,
+      text: article.text,
+      markdown: article.markdown,
+      author: article.author,
+      publication_date: article.publication_date,
+      site_name: article.site_name,
+      keywords: article.keywords,
+    }).returning().get();
+    
+    return result;
+  } catch (error) {
+    console.error(`Error saving article ${article.url}:`, error);
+    throw error;
+  }
 }
 
 /**

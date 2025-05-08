@@ -16,19 +16,25 @@
       "import": "./src/database/index.ts",
       "require": "./src/database/index.ts",
       "types": "./src/database/index.ts"
+    },
+    "./events": {
+      "import": "./src/events/index.ts",
+      "require": "./src/events/index.ts",
+      "types": "./src/events/index.ts"
     }
   },
-
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.7.1",
   "dependencies": {
+    "@aws-sdk/client-eventbridge": "^3.804.0",
     "@libsql/client": "^0.15.4",
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
     "drizzle-orm": "^0.43.1",
-    "turndown": "^7.2.0"
+    "turndown": "^7.2.0",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.35",

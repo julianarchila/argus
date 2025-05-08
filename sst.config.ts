@@ -17,12 +17,13 @@ export default $config({
   },
   async run() {
     const secrets = await import("./infra/secrets")
+    const events = await import("./infra/events")
 
     new sst.aws.Cron("FeedCron", {
       // function: "apps/functions/src/feed-cron/index.handler",
       function: {
         handler: "apps/functions/src/feed-cron/index.handler",
-        link: [...secrets.allSecrets],
+        link: [...secrets.allSecrets, events.eventBus],
         nodejs: {
           install: ['@libsql/linux-x64-gnu']
         }
@@ -30,9 +31,14 @@ export default $config({
       schedule: "rate(1 minute)",
     })
 
-    new sst.aws.Function("TestFunction", {
-      handler: "apps/functions/src/test/index.handler",
-      url: true
-    })
+    // Creating subscribers for each event type
+    events.eventBus.subscribe("ArticleProcessor",
+      "apps/functions/src/article-processor/index.handler", {
+      pattern: {
+        source: ["argus.feedcron"],
+        detailType: ["NewArticlesEvent"]
+      }
+    });
+
   },
 });
