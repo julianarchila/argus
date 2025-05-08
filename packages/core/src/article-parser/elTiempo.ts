@@ -1,23 +1,31 @@
-import { cherrioFromUrl } from "../utils";
-import { Article, ArticleParser } from "./types";
+import { makeArticleParser } from "./article-parser";
+import { Article } from "./types";
 import TurndownService from "turndown";
 
-
-export const elTiempoArticleParser: ArticleParser = async (url) => {
-  const $ = await cherrioFromUrl({
-    url,
-    xml: true
-  });
-
-  const article = _elTiempoExtractContent($);
-  return {
-    ...article,
-    url
-  };
-
+const parseEltiempoDate = (dateText: string) => {
+  if (!dateText) return null;
+  
+  const [datePart, timePart] = dateText.split(' ');
+  const [day, month, year] = datePart.split('.').map(Number);
+  const [hours, minutes] = timePart.split(':').map(Number);
+  
+  // Create date in local time
+  const localDate = new Date(year, month - 1, day, hours, minutes);
+  
+  // Convert from Bogota timezone (UTC-5) to UTC
+  // Add 5 hours to convert from Bogota to UTC
+  const utcDate = new Date(localDate.getTime() + 5 * 60 * 60 * 1000);
+  
+  return utcDate;
 }
 
 const _elTiempoExtractContent = ($: cheerio.Root): Omit<Article, 'url'> => {
+
+  let author = $(".c-articulo__autor__nombre").text();
+
+  let dateText = $(".c-articulo__autor__fecha").find("time").first().text()
+  let date = parseEltiempoDate(dateText)
+
 
   const contentDiv = $('div.c-cuerpo');
   let articleText = '';
@@ -26,19 +34,17 @@ const _elTiempoExtractContent = ($: cheerio.Root): Omit<Article, 'url'> => {
 
   contentDiv.find('div.paragraph').each((_, elem) => {
     const paragraph = $(elem);
-    const textParts = paragraph.find('*').addBack().contents()
-      .filter((_, el) => el.type === 'text')
-      .map((_, el) => (el as any).data)
-      .get();
-    articleText += textParts.join('\n') + '\n';
+    articleText += paragraph.text() + '\n';
     articleMarkdown += turndownService.turndown(paragraph.html() || "") + '\n';
   });
 
   return {
-    text: articleText.trim(),
-    markdown: articleMarkdown.trim(),
-    author: null,
-    date: null
+    text: articleText,
+    markdown: articleMarkdown,
+    author,
+    date
   };
 
 }
+
+export const elTiempoArticleParser = makeArticleParser(_elTiempoExtractContent) 

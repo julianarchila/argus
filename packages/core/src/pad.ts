@@ -25,12 +25,7 @@ async function testElTiempoArticleParser() {
 
 
 async function main() {
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  console.log("updating last processed date for elTiempo");
-  await update_last_proccessed_date("elTiempo", yesterday);
-  console.log("done");
+  await testElTiempoArticleParser()
 }
 
 (async () => {

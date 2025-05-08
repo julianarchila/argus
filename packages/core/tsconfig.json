@@ -4,7 +4,7 @@
     "strict": true,
     "exactOptionalPropertyTypes": true, // optional
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "declaration": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
