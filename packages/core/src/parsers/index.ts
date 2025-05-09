@@ -1,4 +1,4 @@
-import { get_last_proccessed_date, update_last_proccessed_date } from "../database/queries";
+import { getLastProcessedDate, updateLastProcessedDate } from "../database/queries";
 import { filterItemsByDate } from "./parser-utils";
 import { siteConfigs, getSiteConfig } from "./sites";
 import { Article, FeedItem } from "./types";
@@ -21,7 +21,7 @@ export async function processSiteFeed(siteName: string) {
     throw new Error(`No configuration found for site: ${siteName}`);
   }
   
-  const lastProcessed = await get_last_proccessed_date(siteName);
+  const lastProcessed = await getLastProcessedDate(siteName);
   const allItems = await siteConfig.feedParser.parse();
   const newItems = filterItemsByDate(allItems, lastProcessed);
   
@@ -32,7 +32,7 @@ export async function processSiteFeed(siteName: string) {
       allItems[0].publicationDate
     );
     
-    await update_last_proccessed_date(siteName, latestDate);
+    await updateLastProcessedDate(siteName, latestDate);
   }
   
   return {
