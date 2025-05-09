@@ -28,7 +28,7 @@ export default $config({
           install: ['@libsql/linux-x64-gnu']
         }
       },
-      schedule: "rate(1 minute)",
+      schedule: "rate(2 hours)",
     })
 
     // Creating subscribers for each event type
