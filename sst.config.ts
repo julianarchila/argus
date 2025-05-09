@@ -16,37 +16,9 @@ export default $config({
     };
   },
   async run() {
-    const secrets = await import("./infra/secrets")
-    const events = await import("./infra/events")
-
-    new sst.aws.Cron("FeedCron", {
-      // function: "apps/functions/src/feed-cron/index.handler",
-      function: {
-        handler: "apps/functions/src/feed-cron/index.handler",
-        link: [...secrets.allSecrets, events.eventBus],
-        nodejs: {
-          install: ['@libsql/linux-x64-gnu']
-        }
-      },
-      schedule: "rate(2 hours)",
-    })
-
-    // Creating subscribers for each event type
-    events.eventBus.subscribe("ArticleProcessor",
-      // "apps/functions/src/article-processor/index.handler"
-      {
-        handler: "apps/functions/src/article-processor/index.handler",
-        link: [...secrets.allSecrets, events.eventBus],
-        nodejs: {
-          install: ['@libsql/linux-x64-gnu']
-        }
-      }
-      , {
-      pattern: {
-        source: ["argus.feedcron"],
-        detailType: ["NewArticlesEvent"]
-      }
-    });
+    await import("./infra/secrets")
+    await import("./infra/events")
+    await import("./infra/cron")
 
   },
 });
