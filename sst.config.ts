@@ -20,5 +20,12 @@ export default $config({
     await import("./infra/events")
     await import("./infra/cron")
 
+    new sst.x.DevCommand("LocalTurso", {
+      dev: {
+        command: "turso dev --db-file local.db",
+        autostart: true
+      }
+    })
+
   },
 });

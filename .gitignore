@@ -207,3 +207,7 @@ node_modules
 # Turbo
 .turbo
 
+
+
+# LOCAL TURSO
+local.db*
