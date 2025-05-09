@@ -42,7 +42,21 @@ export async function saveArticle(article: InsertArticle) {
       publication_date: article.publication_date,
       site_name: article.site_name,
       keywords: article.keywords,
-    }).returning().get();
+    })
+    .onConflictDoUpdate({
+      target: articlesTable.url,
+      set: {
+        title: article.title || null,
+        text: article.text,
+        markdown: article.markdown,
+        author: article.author,
+        publication_date: article.publication_date,
+        site_name: article.site_name,
+        keywords: article.keywords,
+      }
+    })
+    .returning()
+    .get();
     
     return result;
   } catch (error) {

@@ -67,5 +67,11 @@ export function createArticleParser(
  */
 export function filterItemsByDate(items: FeedItem[], lastProcessed?: Date | null): FeedItem[] {
   if (!lastProcessed) return items;
+
+
+  // make sure both dates are in utc
+  const lastProcessedUtc = new Date(lastProcessed.toISOString());
+  const itemsUtc = items.map(item => new Date(item.publicationDate.toISOString()));
+
   return items.filter(item => item.publicationDate && item.publicationDate > lastProcessed);
 } 

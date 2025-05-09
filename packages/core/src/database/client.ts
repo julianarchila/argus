@@ -17,7 +17,6 @@ export const getDb = () => {
     console.log("No existing db, creating new one")
     db = createClient()
   }
-  console.log("Returning existing db")
   return db
 }
 

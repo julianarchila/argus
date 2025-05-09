@@ -33,7 +33,15 @@ export default $config({
 
     // Creating subscribers for each event type
     events.eventBus.subscribe("ArticleProcessor",
-      "apps/functions/src/article-processor/index.handler", {
+      // "apps/functions/src/article-processor/index.handler"
+      {
+        handler: "apps/functions/src/article-processor/index.handler",
+        link: [...secrets.allSecrets, events.eventBus],
+        nodejs: {
+          install: ['@libsql/linux-x64-gnu']
+        }
+      }
+      , {
       pattern: {
         source: ["argus.feedcron"],
         detailType: ["NewArticlesEvent"]
