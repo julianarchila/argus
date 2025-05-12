@@ -75,6 +75,12 @@ importers:
         specifier: ^0.31.1
         version: 0.31.1
 
+  packages/scripts:
+    dependencies:
+      '@argus/core':
+        specifier: workspace:*
+        version: link:../core
+
 packages:
 
   '@aws-crypto/sha256-browser@5.2.0':
@@ -1196,7 +1202,6 @@ packages:
 
   libsql@0.5.8:
     resolution: {integrity: sha512-+OopMI1wM/NvAJTHf3O3+beHd1YfKLnSVsOGBl3/7UBDZ4ydVadkbBk5Hjjs9d3ALC5rBaftMY59AvwyC8MzPw==}
-    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lru-cache@6.0.0:

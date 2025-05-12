@@ -1,6 +1,6 @@
-import * as events from "@argus/core/events";
-import type { SiteFeedResult } from "@argus/core/parsers";
-import * as parsers from "@argus/core/parsers";
+import * as events from "@argus/core/events/index";
+import type { SiteFeedResult } from "@argus/core/parsers/index";
+import * as parsers from "@argus/core/parsers/index";
 
 export const handler = async (event: any, context: any) => {
   try {

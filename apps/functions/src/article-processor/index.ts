@@ -1,6 +1,6 @@
-import * as parsers from "@argus/core/parsers";
-import * as db from "@argus/core/database";
-import * as events from "@argus/core/events"
+import * as parsers from "@argus/core/parsers/index";
+import * as db from "@argus/core/database/index";
+import * as events from "@argus/core/events/index"
 
 /**
  * Lambda handler for processing articles from EventBridge events
@@ -15,7 +15,7 @@ export const handler = async (event: any) => {
         body: JSON.stringify({ message: "Unsupported event format" })
       };
     }
-    
+
     return await processArticles(normalizedEvent);
   } catch (error) {
     console.error("Error processing articles:", error);
@@ -51,7 +51,7 @@ function normalizeEvent(event: any): any {
     }
     return null;
   }
-  
+
   // Case 2: Direct EventBridge invocation
   if (event.detail) {
     return {
@@ -59,7 +59,7 @@ function normalizeEvent(event: any): any {
       detailType: event.detailType || event['detail-type']
     };
   }
-  
+
   // Unsupported format
   return null;
 }
@@ -70,9 +70,9 @@ function normalizeEvent(event: any): any {
 async function processArticles(event: any) {
   // Parse and validate the incoming event
   const { siteName, articles } = events.parseEvent<"NewArticlesEvent">(event);
-  
+
   console.log(`Processing ${articles.length} articles for ${siteName}`);
-  
+
   const results = [];
   // Process each article
   for (const article of articles) {
@@ -84,7 +84,7 @@ async function processArticles(event: any) {
       results.push({ url: article.url, error: String(error) });
     }
   }
-  
+
   return {
     statusCode: 200,
     body: JSON.stringify({
@@ -100,7 +100,7 @@ async function processArticles(event: any) {
 async function processArticle(article: any, siteName: string) {
   // Extract the article content using the appropriate parser
   const parsedArticle = await parsers.processArticle(article.url, siteName);
-  
+
   // Store in database
   const savedArticle = await db.saveArticle({
     url: article.url,
@@ -113,7 +113,7 @@ async function processArticle(article: any, siteName: string) {
     publication_date: article.publicationDate,
     lastmod: article.lastModified,
   });
-  
+
   // Publish event for downstream processing
   // await events.publishEvent(
   //   "ArticleProcessedEvent",
@@ -124,6 +124,6 @@ async function processArticle(article: any, siteName: string) {
   //     url: article.url
   //   }
   // );
-  
+
   return { id: savedArticle.id, url: article.url, processed: true };
 }

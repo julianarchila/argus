@@ -1,0 +1,15 @@
+{
+  "name": "@argus/scripts",
+  "version": "0.0.0",
+  "type": "module",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "feed-parser": "sst shell -- tsx src/run-feed-parser.ts"
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "@argus/core": "workspace:*"
+  }
+}
+
