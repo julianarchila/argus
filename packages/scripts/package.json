@@ -5,7 +5,8 @@
   "sideEffects": false,
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "feed-parser": "sst shell -- tsx src/run-feed-parser.ts"
+    "feed-parser": "sst shell -- tsx src/run-feed-parser.ts",
+    "article-parser": "sst shell -- tsx src/run-article-parser.ts"
   },
   "devDependencies": {},
   "dependencies": {
