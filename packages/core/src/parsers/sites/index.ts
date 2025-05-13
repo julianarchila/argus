@@ -1,9 +1,11 @@
 import { SiteConfig } from "../types";
 import { elTiempoConfig } from "./elTiempo";
+import { elEspectadorConfig } from "./elEspectador"
 
 // Registry of all site configurations
 export const siteConfigs: SiteConfig[] = [
   elTiempoConfig,
+  elEspectadorConfig
   // Add more site configurations here as they are implemented
 ];
 
