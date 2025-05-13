@@ -23,9 +23,14 @@ if (!siteConfig) {
   process.exit(1);
 }
 
-const res = await siteConfig.articleParser.parse(url)
-
-console.log({
-  article: res
-})
+try {
+  const res = await siteConfig.articleParser.parse(url)
+  
+  console.log({
+    article: res
+  })
+} catch (error) {
+  console.error("Error parsing article:", error.message);
+  process.exit(1);
+}
 
