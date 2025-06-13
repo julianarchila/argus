@@ -36,9 +36,24 @@ const parseFeed = ($: cheerio.Root): FeedItem[] => {
 const parseEltiempoDate = (dateText: string) => {
   if (!dateText) return null;
   
-  const [datePart, timePart] = dateText.split(' ');
-  const [day, month, year] = datePart.split('.').map(Number);
-  const [hours, minutes] = timePart.split(':').map(Number);
+  const parts = dateText.split(' ');
+  if (parts.length !== 2) return null;
+  
+  const dateComponents = parts[0].split('.');
+  const timeComponents = parts[1].split(':');
+  
+  if (dateComponents.length !== 3 || timeComponents.length !== 2) return null;
+  
+  const day = Number(dateComponents[0]);
+  const month = Number(dateComponents[1]);
+  const year = Number(dateComponents[2]);
+  const hours = Number(timeComponents[0]);
+  const minutes = Number(timeComponents[1]);
+  
+  // Validate that all components are valid numbers
+  if (isNaN(day) || isNaN(month) || isNaN(year) || isNaN(hours) || isNaN(minutes)) {
+    return null;
+  }
   
   // Create date in local time
   const localDate = new Date(year, month - 1, day, hours, minutes);
