@@ -1,11 +1,11 @@
 import { embed } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { Pinecone, PineconeRecord } from '@pinecone-database/pinecone';
-import { Article } from '../packages/core/src/parsers';
+import { Article } from '../parsers/types'; 
 
 export type GenerateEmbeddingsOptions = {
   article: Article;
-  id: string; // ahora sí se usa acá también si quieres ligarlo
+  id: string;
 };
 
 export type SaveEmbeddingsOptions = {
@@ -24,19 +24,29 @@ const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
 const indexName = 'article-embeddings';
 let index: ReturnType<typeof pinecone.index>;
 
-// Crear índice si no existe
-async function setupIndex() {
-  const indexes = await pinecone.listIndexes();
-  if (!indexes.includes(indexName)) {
-    await pinecone.createIndex({
-      name: indexName,
-      dimension: 1536,
-      metric: 'cosine',
-    });
-  }
-  index = pinecone.index(indexName);
+// Función para inicializar embeddings (llamada explícita)
+export async function initEmbeddings(): Promise<void> {
+  await setupIndex();
 }
-await setupIndex();
+
+// Crear índice si no existe y esperar a que esté listo
+async function setupIndex() {
+  try {
+    const indexes = await pinecone.listIndexes();
+    if (!indexes.includes(indexName)) {
+      await pinecone.createIndex({
+        name: indexName,
+        dimension: 1536,
+        metric: 'cosine',
+        waitUntilReady: true, // Esperar hasta que esté listo
+      });
+    }
+    index = pinecone.index(indexName);
+  } catch (error) {
+    console.error('Error setting up Pinecone index:', error);
+    throw new Error('Failed to initialize Pinecone index');
+  }
+}
 
 // Generar embeddings con OpenAI
 export async function generateArticleEmbeddings(
@@ -60,6 +70,11 @@ export async function generateArticleEmbeddings(
 export async function saveArticleEmbeddings(
   options: SaveEmbeddingsOptions
 ): Promise<void> {
+  // Verificar que el índice esté inicializado
+  if (!index) {
+    throw new Error('Pinecone index not initialised. Call initEmbeddings() first.');
+  }
+
   try {
     const record: PineconeRecord = {
       id: options.id,
