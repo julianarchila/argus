@@ -6,8 +6,8 @@ import * as parsers from "@argus/core/parsers/index";
 
 export const handler = async () => {
   try {
-    // Call the parsers function to get all feeds
-    const results = await parsers.processAllSites();
+    // Call the parsers function to get all feeds with development limits
+    const results = await parsers.processAllSites({ devLimit: 3 });
 
     // Log results for each site
     for (const result of results) {

@@ -76,7 +76,7 @@ export async function getLastProcessedDate(siteName: string) {
     return null;
   }
 
-  return result[0].last_processed;
+  return result[0]!.last_processed;
 }
 
 /**
