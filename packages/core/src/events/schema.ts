@@ -1,62 +1,69 @@
+import { event } from "sst/event";
+import { ZodValidator } from "sst/event/validator";
 import { z } from "zod";
-import { FeedItem, Article } from "../parsers/types";
 
-// Base event structure
-export const BaseEventSchema = z.object({
-  source: z.string(),
-  detailType: z.string(),
-  time: z.string().datetime().optional(),
-  id: z.string().optional(),
+// Create event builder with Zod validation and metadata
+const defineEvent = event.builder({
+  validator: ZodValidator,
+  metadata() {
+    return {
+      timestamp: new Date().toISOString(),
+      source: "argus",
+      version: "1.0",
+      correlationId: crypto.randomUUID(),
+    };
+  },
 });
 
-// Define schemas for each event type
-export const NewArticlesEventSchema = z.object({
-  siteName: z.string(),
-  articles: z.array(
-    z.object({
-      url: z.string().url(),
-      title: z.string(),
-      publicationDate: z.string().datetime(),
-      lastModified: z.string().datetime().optional(),
-      keywords: z.string().optional(),
-    })
-  ),
-});
+// Define events using SST's event builder pattern
+export const NewArticlesEvent = defineEvent(
+  "articles.new",
+  z.object({
+    siteName: z.string(),
+    articles: z.array(
+      z.object({
+        url: z.string().url(),
+        title: z.string(),
+        publicationDate: z.string().datetime(),
+        lastModified: z.string().datetime().optional(),
+        keywords: z.string().optional(),
+      })
+    ),
+  })
+);
 
-export const ArticleProcessedEventSchema = z.object({
-  articleId: z.number(),
-  siteName: z.string(),
-  url: z.string().url(),
-});
+export const ArticleProcessedEvent = defineEvent(
+  "articles.processed",
+  z.object({
+    articleId: z.number(),
+    siteName: z.string(),
+    url: z.string().url(),
+  })
+);
 
-export const EmbeddingGeneratedEventSchema = z.object({
-  articleId: z.number(),
-  embeddingId: z.string(),
-  dimension: z.number(),
-});
+export const EmbeddingGeneratedEvent = defineEvent(
+  "embeddings.generated",
+  z.object({
+    articleId: z.number(),
+    embeddingId: z.string(),
+    dimension: z.number(),
+  })
+);
 
-export const ClusterUpdatedEventSchema = z.object({
-  clusterId: z.string(),
-  articleIds: z.array(z.number()),
-  topicKeywords: z.array(z.string()),
-  timestamp: z.string().datetime(),
-});
+export const ClusterUpdatedEvent = defineEvent(
+  "clusters.updated",
+  z.object({
+    clusterId: z.string(),
+    articleIds: z.array(z.number()),
+    topicKeywords: z.array(z.string()),
+    timestamp: z.string().datetime(),
+  })
+);
 
-// Event type lookup by name
-export const EventSchemas = {
-  "NewArticlesEvent": NewArticlesEventSchema,
-  "ArticleProcessedEvent": ArticleProcessedEventSchema,
-  "EmbeddingGeneratedEvent": EmbeddingGeneratedEventSchema,
-  "ClusterUpdatedEvent": ClusterUpdatedEventSchema,
+// Export all events for easy importing
+export const Events = {
+  NewArticlesEvent,
+  ArticleProcessedEvent,
+  EmbeddingGeneratedEvent,
+  ClusterUpdatedEvent,
 } as const;
-
-// TypeScript types derived from schemas
-export type BaseEvent = z.infer<typeof BaseEventSchema>;
-export type NewArticlesEvent = z.infer<typeof NewArticlesEventSchema>;
-export type ArticleProcessedEvent = z.infer<typeof ArticleProcessedEventSchema>;
-export type EmbeddingGeneratedEvent = z.infer<typeof EmbeddingGeneratedEventSchema>;
-export type ClusterUpdatedEvent = z.infer<typeof ClusterUpdatedEventSchema>;
-
-// Type mapping for TypeScript
-export type EventDetailType = keyof typeof EventSchemas;
-export type EventDetail<T extends EventDetailType> = z.infer<typeof EventSchemas[T]>;

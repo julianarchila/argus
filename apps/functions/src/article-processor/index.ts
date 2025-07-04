@@ -1,98 +1,35 @@
+import { bus } from "sst/aws/bus";
+import { Resource } from "sst";
+import { NewArticlesEvent, ArticleProcessedEvent } from "@argus/core/events/schema";
 import * as parsers from "@argus/core/parsers/index";
 import * as db from "@argus/core/database/index";
-import * as events from "@argus/core/events/index"
 
-/**
- * Lambda handler for processing articles from EventBridge events
- */
-export const handler = async (event: any) => {
+export const handler = bus.subscriber([NewArticlesEvent], async (event) => {
   try {
-    const normalizedEvent = normalizeEvent(event);
-    if (!normalizedEvent) {
-      console.log("Received unsupported event format:", JSON.stringify(event, null, 2));
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: "Unsupported event format" })
-      };
-    }
+    if (event.type === "articles.new") {
+      const { siteName, articles } = event.properties;
+      
+      console.log(`Processing ${articles.length} articles for ${siteName}`);
 
-    return await processArticles(normalizedEvent);
-  } catch (error) {
-    console.error("Error processing articles:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "Error processing articles",
-        error: error instanceof Error ? error.message : String(error)
-      })
-    };
-  }
-};
-
-/**
- * Normalize different event formats into a standard structure
- */
-function normalizeEvent(event: any): any {
-  // Case 1: SQS event with EventBridge payload
-  if (Array.isArray(event.Records) && event.Records.length > 0) {
-    const record = event.Records[0];
-    if (record.eventSource === 'aws:sqs') {
-      try {
-        const body = JSON.parse(record.body);
-        if (body.detail) {
-          return {
-            ...body,
-            detailType: body.detailType || body['detail-type']
-          };
+      const results = [];
+      // Process each article
+      for (const article of articles) {
+        try {
+          const result = await processArticle(article, siteName);
+          results.push(result);
+        } catch (error) {
+          console.error(`Error processing article ${article.url}:`, error);
+          results.push({ url: article.url, error: String(error) });
         }
-      } catch (e) {
-        console.error("Error parsing SQS message:", e);
       }
+
+      console.log(`Processed ${articles.length} articles for ${siteName}`, { results });
     }
-    return null;
+  } catch (error) {
+    console.error("Error in article processor:", error);
+    throw error; // Re-throw to trigger retry
   }
-
-  // Case 2: Direct EventBridge invocation
-  if (event.detail) {
-    return {
-      ...event,
-      detailType: event.detailType || event['detail-type']
-    };
-  }
-
-  // Unsupported format
-  return null;
-}
-
-/**
- * Process articles from the normalized event
- */
-async function processArticles(event: any) {
-  // Parse and validate the incoming event
-  const { siteName, articles } = events.parseEvent<"NewArticlesEvent">(event);
-
-  console.log(`Processing ${articles.length} articles for ${siteName}`);
-
-  const results = [];
-  // Process each article
-  for (const article of articles) {
-    try {
-      const result = await processArticle(article, siteName);
-      results.push(result);
-    } catch (error) {
-      console.error(`Error processing article ${article.url}:`, error);
-      results.push({ url: article.url, error: String(error) });
-    }
-  }
-
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message: `Processed ${articles.length} articles for ${siteName}`,
-      results
-    })
-  };
-}
+});
 
 /**
  * Process a single article
@@ -115,15 +52,11 @@ async function processArticle(article: any, siteName: string) {
   });
 
   // Publish event for downstream processing
-  // await events.publishEvent(
-  //   "ArticleProcessedEvent",
-  //   "argus.articleprocessor",
-  //   {
-  //     articleId: savedArticle.id,
-  //     siteName,
-  //     url: article.url
-  //   }
-  // );
+  await bus.publish(Resource.ArgusEventBus, ArticleProcessedEvent, {
+    articleId: savedArticle.id,
+    siteName,
+    url: article.url
+  });
 
   return { id: savedArticle.id, url: article.url, processed: true };
 }

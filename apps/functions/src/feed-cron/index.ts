@@ -1,20 +1,21 @@
-import * as events from "@argus/core/events/index";
+import { bus } from "sst/aws/bus";
+import { Resource } from "sst";
+import { NewArticlesEvent } from "@argus/core/events/schema";
 import type { SiteFeedResult } from "@argus/core/parsers/index";
 import * as parsers from "@argus/core/parsers/index";
 
-export const handler = async (event: any, context: any) => {
+export const handler = async () => {
   try {
     // Call the parsers function to get all feeds
     const results = await parsers.processAllSites();
 
     // Log results for each site
     for (const result of results) {
-
       if (result.items.length > 0) {
         // Publish events in parallel using Promise.all
         await Promise.all(
           result.items.map(item => 
-            events.publishEvent("NewArticlesEvent", "argus.feedcron", {
+            bus.publish(Resource.ArgusEventBus, NewArticlesEvent, {
               siteName: result.siteName,
               articles: [{
                 url: item.url,
@@ -63,4 +64,4 @@ export const handler = async (event: any, context: any) => {
       })
     };
   }
-}
+};

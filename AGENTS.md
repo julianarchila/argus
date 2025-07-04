@@ -27,8 +27,8 @@
 - `infra/` - SST infrastructure definitions
 
 ### Event Flow
-1. **Feed Cron** (every 2 hours) → scrapes XML feeds → publishes `NewArticlesEvent`
-2. **Article Processor** → receives events → parses article content → stores in database
+1. **Feed Cron** (every 2 hours) → scrapes XML feeds → publishes `articles.new` events
+2. **Article Processor** → receives events via `bus.subscriber()` → parses article content → stores in database → publishes `articles.processed` events
 3. **Future**: Article processing → embedding generation → clustering → notifications
 
 ## Database Schema
@@ -46,10 +46,14 @@ site_tracking: site_name, last_processed
 - **Parser types**: FeedParser (XML/RSS) + ArticleParser (HTML content extraction)
 - **Location**: `packages/core/src/parsers/sites/`
 
-## EventBridge Events
-- **Bus**: `ArgusEventBus` with pattern-based routing
-- **Events**: `NewArticlesEvent`, `ArticleProcessedEvent`, `EmbeddingGeneratedEvent`, `ClusterUpdatedEvent`
-- **Validation**: Zod schemas in `packages/core/src/events/schema.ts`
+## Event Bus System
+- **Architecture**: Uses SST's native event bus utilities (`sst/aws/bus` and `sst/event`)
+- **Bus**: `ArgusEventBus` with automatic event routing
+- **Events**: `articles.new`, `articles.processed`, `embeddings.generated`, `clusters.updated`
+- **Type Safety**: SST's `event.builder()` with Zod validation and automatic metadata generation
+- **Publishing**: `bus.publish(Resource.ArgusEventBus, EventType, payload)`
+- **Consuming**: `bus.subscriber([EventTypes], handler)` with type-safe event handling
+- **Metadata**: Automatic correlation IDs, timestamps, versioning for observability
 
 ## Code Style
 - Use double quotes for strings
@@ -62,6 +66,7 @@ site_tracking: site_name, last_processed
 - Error handling: try/catch blocks with proper error logging via console.error
 - Use `?.` optional chaining and `??` nullish coalescing
 - Type safety: enable `noUncheckedIndexedAccess` in tsconfig
+- **Event Bus**: Use SST's native utilities (`bus.publish()`, `bus.subscriber()`) - avoid custom event utilities
 
 ## Missing Features (Opportunities)
 - **API Layer**: No REST/GraphQL API for data access
