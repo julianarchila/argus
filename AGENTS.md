@@ -1,0 +1,73 @@
+# Agents Guide for Argus
+
+## Project Overview
+**Argus** is a news aggregation and processing system that automatically collects, processes, and stores articles from Colombian news sites using an event-driven architecture on AWS.
+
+## Build/Test Commands
+- `pnpm dev` - Start SST development server
+- `pnpm run typecheck` - Run TypeScript type checking (in scripts package)
+- `pnpm run feed-parser` - Run feed parser script
+- `pnpm run article-parser` - Run article parser script
+- `pnpm run db` - Run drizzle-kit database commands (in core package)
+- No test suite currently configured
+
+## Architecture
+- **Event-Driven Microservices**: Uses SST EventBridge Bus for decoupled communication
+- **Monorepo**: pnpm workspaces with Turbo for build orchestration
+- **Infrastructure**: SST v3 for AWS serverless deployment
+- **Database**: Drizzle ORM with libSQL (Turso) database
+- **Runtime**: TypeScript with ESM modules on AWS Lambda
+
+### Core Components
+- `packages/core/` - Shared business logic (database, events, parsers)
+- `apps/functions/` - AWS Lambda functions (feed-cron, article-processor)
+- `apps/api/` - REST API (placeholder, not implemented)
+- `apps/web-extension/` - Browser extension (placeholder, not implemented)
+- `apps/data-processing/` - ML/analytics pipeline (placeholder, not implemented)
+- `infra/` - SST infrastructure definitions
+
+### Event Flow
+1. **Feed Cron** (every 2 hours) → scrapes XML feeds → publishes `NewArticlesEvent`
+2. **Article Processor** → receives events → parses article content → stores in database
+3. **Future**: Article processing → embedding generation → clustering → notifications
+
+## Database Schema
+```sql
+-- Main articles table
+articles: id, url, title, text, markdown, author, publication_date, lastmod, site_name, keywords, created_at
+
+-- Site tracking for incremental processing
+site_tracking: site_name, last_processed
+```
+
+## Site Parsers
+- **Extensible architecture**: Add new sites by implementing `SiteConfig` interface
+- **Current sites**: elTiempo, elEspectador (Colombian news)
+- **Parser types**: FeedParser (XML/RSS) + ArticleParser (HTML content extraction)
+- **Location**: `packages/core/src/parsers/sites/`
+
+## EventBridge Events
+- **Bus**: `ArgusEventBus` with pattern-based routing
+- **Events**: `NewArticlesEvent`, `ArticleProcessedEvent`, `EmbeddingGeneratedEvent`, `ClusterUpdatedEvent`
+- **Validation**: Zod schemas in `packages/core/src/events/schema.ts`
+
+## Code Style
+- Use double quotes for strings
+- Prefer `const` over `let`
+- Use camelCase for variables/functions, PascalCase for types/interfaces
+- Add JSDoc comments for exported functions
+- Use explicit return types for functions
+- Import statements: external packages first, then workspace packages with `@argus/`
+- Use arrow functions for simple functions, regular functions for complex ones
+- Error handling: try/catch blocks with proper error logging via console.error
+- Use `?.` optional chaining and `??` nullish coalescing
+- Type safety: enable `noUncheckedIndexedAccess` in tsconfig
+
+## Missing Features (Opportunities)
+- **API Layer**: No REST/GraphQL API for data access
+- **Web Interface**: No frontend for browsing articles
+- **Search**: No full-text search capability
+- **ML Pipeline**: Event schemas exist but no embedding/clustering implementation
+- **Web Extension**: Directory exists but empty
+- **Monitoring**: No alerting or observability
+- **Testing**: No test suite configured
