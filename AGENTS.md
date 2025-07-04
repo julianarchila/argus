@@ -8,6 +8,7 @@
 - `pnpm run typecheck` - Run TypeScript type checking (in scripts package)
 - `pnpm run feed-parser` - Run feed parser script
 - `pnpm run article-parser` - Run article parser script
+- `pnpm run trigger-cron` - Manually trigger feed cron job (dev-friendly)
 - `pnpm run db` - Run drizzle-kit database commands (in core package)
 - No test suite currently configured
 
@@ -19,7 +20,7 @@
 - **Runtime**: TypeScript with ESM modules on AWS Lambda
 
 ### Core Components
-- `packages/core/` - Shared business logic (database, events, parsers)
+- `packages/core/` - Shared business logic (database, events, parsers, jobs)
 - `apps/functions/` - AWS Lambda functions (feed-cron, article-processor)
 - `apps/api/` - REST API (placeholder, not implemented)
 - `apps/web-extension/` - Browser extension (placeholder, not implemented)
@@ -27,9 +28,15 @@
 - `infra/` - SST infrastructure definitions
 
 ### Event Flow
-1. **Feed Cron** (every 2 hours) → scrapes XML feeds → publishes `articles.new` events
+1. **Feed Cron** (every 2 hours in prod, 24 hours in dev) → scrapes XML feeds → publishes `articles.new` events
 2. **Article Processor** → receives events via `bus.subscriber()` → parses article content → stores in database → publishes `articles.processed` events
 3. **Future**: Article processing → embedding generation → clustering → notifications
+
+### Job System
+- **Shared Business Logic**: Core job functions in `packages/core/src/jobs/`
+- **executeFeedCron()**: Shared function used by both scheduled Lambda and manual trigger script
+- **Environment-aware**: Different schedules and limits for dev vs production
+- **Manual Triggering**: `pnpm run trigger-cron` for immediate testing without waiting for schedule
 
 ## Database Schema
 ```sql
@@ -67,6 +74,7 @@ site_tracking: site_name, last_processed
 - Use `?.` optional chaining and `??` nullish coalescing
 - Type safety: enable `noUncheckedIndexedAccess` in tsconfig
 - **Event Bus**: Use SST's native utilities (`bus.publish()`, `bus.subscriber()`) - avoid custom event utilities
+- **Shared Logic**: Extract reusable business logic to `packages/core/src/jobs/` for consistency between Lambda handlers and scripts
 
 ## Missing Features (Opportunities)
 - **API Layer**: No REST/GraphQL API for data access

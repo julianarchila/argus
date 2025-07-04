@@ -6,7 +6,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "feed-parser": "sst shell -- tsx src/run-feed-parser.ts",
-    "article-parser": "sst shell -- tsx src/run-article-parser.ts"
+    "article-parser": "sst shell -- tsx src/run-article-parser.ts",
+    "trigger-cron": "sst shell -- tsx src/trigger-cron.ts"
   },
   "devDependencies": {},
   "dependencies": {

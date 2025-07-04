@@ -26,12 +26,11 @@ export async function processSiteFeed(siteName: string, options: { devLimit?: nu
   const allItems = await siteConfig.feedParser.parse();
   let newItems = filterItemsByDate(allItems, lastProcessed);
   
-  // In development mode, limit the number of articles to prevent memory issues
-  const isDev = process.env.SST_DEV === "true";
-  const devLimit = options.devLimit ?? (isDev ? 3 : undefined);
+  // Apply dev limit if specified
+  const devLimit = options.devLimit;
   
-  if (isDev && devLimit && newItems.length > devLimit) {
-    console.warn(`[DEV MODE] Limiting ${siteName} from ${newItems.length} to ${devLimit} articles`);
+  if (devLimit && newItems.length > devLimit) {
+    console.warn(`[LIMIT] Limiting ${siteName} from ${newItems.length} to ${devLimit} articles`);
     newItems = newItems.slice(0, devLimit);
   }
   

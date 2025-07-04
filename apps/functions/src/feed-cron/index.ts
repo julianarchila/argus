@@ -1,43 +1,8 @@
-import { bus } from "sst/aws/bus";
-import { Resource } from "sst";
-import { NewArticlesEvent } from "@argus/core/events/schema";
-import type { SiteFeedResult } from "@argus/core/parsers/index";
-import * as parsers from "@argus/core/parsers/index";
+import { executeFeedCron } from "@argus/core/jobs/feed-cron"
 
 export const handler = async () => {
   try {
-    // Call the parsers function to get all feeds with development limits
-    const results = await parsers.processAllSites({ devLimit: 3 });
-
-    // Log results for each site
-    for (const result of results) {
-      if (result.items.length > 0) {
-        // Publish events in parallel using Promise.all
-        await Promise.all(
-          result.items.map(item => 
-            bus.publish(Resource.ArgusEventBus, NewArticlesEvent, {
-              siteName: result.siteName,
-              articles: [{
-                url: item.url,
-                title: item.title,
-                publicationDate: item.publicationDate.toISOString(),
-                lastModified: item.lastModified?.toISOString(),
-                keywords: item.keywords
-              }]
-            })
-          )
-        );
-        
-        console.log(`Published ${result.items.length} individual events for ${result.siteName}`);
-      }
-
-      console.log({
-        site_name: result.siteName,
-        lastProcessed: result.lastProcessed,
-        newItems: result.items.length,
-        totalItems: result.totalItemsFound
-      });
-    }
+    const result = await executeFeedCron()
 
     return {
       statusCode: 200,
@@ -46,12 +11,12 @@ export const handler = async () => {
       },
       body: JSON.stringify({
         message: "Feed processing completed successfully",
-        processed: results.length,
-        newItems: results.reduce((total: number, result: SiteFeedResult) => total + result.items.length, 0)
+        processed: result.processed,
+        newItems: result.newItems
       })
-    };
+    }
   } catch (error) {
-    console.error("Error processing feeds:", error);
+    console.error("Error processing feeds:", error)
 
     return {
       statusCode: 500,
@@ -62,6 +27,6 @@ export const handler = async () => {
         message: "Error processing feeds",
         error: error instanceof Error ? error.message : String(error)
       })
-    };
+    }
   }
-};
+}
