@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { getDb } from "../shared/database";
-import { siteTrackingTable, type InsertSiteTracking, type SelectSiteTracking } from "./schema";
+import { siteTrackingTable, type InsertSiteTracking, type SelectSiteTracking } from "./schema.sql";
 
 export namespace Site {
   // Types first (following SST pattern)

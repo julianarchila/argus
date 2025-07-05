@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { bus } from "sst/aws/bus";
 import { Resource } from "sst";
 import { getDb } from "../shared/database";
-import { articlesTable, type InsertArticle, type SelectArticle } from "./schema";
+import { articlesTable, type InsertArticle, type SelectArticle } from "./schema.sql";
 import { Article as ArticleEvents } from "./events";
 
 export namespace Article {
