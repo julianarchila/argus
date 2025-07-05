@@ -1,4 +1,4 @@
-import { createArticleParser, createFeedParser } from "../parser-utils";
+import { createArticleParser, createFeedParser } from "../utils";
 import { FeedItem, SiteConfig } from "../types";
 import TurndownService from "turndown";
 

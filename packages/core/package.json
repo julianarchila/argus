@@ -10,6 +10,14 @@
     "pad": "sst shell tsx ./src/pad.ts"
   },
   "exports": {
+    ".": "./src/index.ts",
+    "./article": "./src/article/index.ts",
+    "./site": "./src/site/index.ts",
+    "./feed": "./src/feed/index.ts",
+    "./parser": "./src/parser/index.ts",
+    "./article/events": "./src/article/events.ts",
+    "./feed/events": "./src/feed/events.ts",
+    "./parser/sites": "./src/parser/sites/index.ts",
     "./*": "./src/*.ts"
   },
   "dependencies": {

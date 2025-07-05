@@ -1,12 +1,13 @@
 import { bus } from "sst/aws/bus";
 import { Resource } from "sst";
-import { NewArticlesEvent, ArticleProcessedEvent } from "@argus/core/events/schema";
-import * as parsers from "@argus/core/parsers/index";
-import * as db from "@argus/core/database/index";
+import { Feed } from "@argus/core/feed/events";
+import { Article } from "@argus/core/article";
+import { Parser } from "@argus/core/parser";
 
-export const handler = bus.subscriber([NewArticlesEvent], async (event) => {
+// Follow SST subscriber pattern for event handling
+export const handler = bus.subscriber([Feed.Events.ArticlesDiscovered], async (event) => {
   try {
-    if (event.type === "articles.new") {
+    if (event.type === "feed.articles.discovered") {
       const { siteName, articles } = event.properties;
       
       console.log(`Processing ${articles.length} articles for ${siteName}`);
@@ -31,15 +32,12 @@ export const handler = bus.subscriber([NewArticlesEvent], async (event) => {
   }
 });
 
-/**
- * Process a single article
- */
 async function processArticle(article: any, siteName: string) {
   // Extract the article content using the appropriate parser
-  const parsedArticle = await parsers.processArticle(article.url, siteName);
+  const parsedArticle = await Parser.processArticle(article.url, siteName);
 
-  // Store in database
-  const savedArticle = await db.saveArticle({
+  // Store in database using namespace pattern (Article.create instead of Article.save)
+  const savedArticle = await Article.create({
     url: article.url,
     title: article.title,
     text: parsedArticle.text,
@@ -49,13 +47,6 @@ async function processArticle(article: any, siteName: string) {
     author: parsedArticle.author,
     publication_date: article.publicationDate,
     lastmod: article.lastModified,
-  });
-
-  // Publish event for downstream processing
-  await bus.publish(Resource.ArgusEventBus, ArticleProcessedEvent, {
-    articleId: savedArticle.id,
-    siteName,
-    url: article.url
   });
 
   return { id: savedArticle.id, url: article.url, processed: true };

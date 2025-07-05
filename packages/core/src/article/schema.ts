@@ -15,15 +15,5 @@ export const articlesTable = sqliteTable('articles', {
   created_at: integer('created_at', { mode: 'timestamp' }).default(sql`(CURRENT_TIMESTAMP)`),
 });
 
-export type SelectArticle = typeof articlesTable.$inferSelect
-export type InsertArticle = typeof articlesTable.$inferInsert
-
-
-
-export const siteTrackingTable = sqliteTable('site_tracking', {
-  site_name: text('site_name').primaryKey(),
-  last_processed: integer('last_processed', { mode: 'timestamp' }),
-});
-
-export type SelectSiteTracking = typeof siteTrackingTable.$inferSelect
-export type InsertSiteTracking = typeof siteTrackingTable.$inferInsert  
+export type SelectArticle = typeof articlesTable.$inferSelect;
+export type InsertArticle = typeof articlesTable.$inferInsert;
