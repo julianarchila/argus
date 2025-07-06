@@ -7,7 +7,12 @@ export const secret = {
     "DBToken",
     "LOCAL"
   ),
+  PineconeApiKey: new sst.Secret(
+    "PineconeApiKey"
+  ),
+  OpenAIKey: new sst.Secret(
+    "OpenAIKey"
+  ),
 }
 
 export const allSecrets = Object.values(secret)
-

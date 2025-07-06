@@ -18,6 +18,14 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "OpenAIKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PineconeApiKey": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
   }
 }
 /// <reference path="sst-env.d.ts" />

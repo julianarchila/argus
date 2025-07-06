@@ -1,7 +1,8 @@
-import { embed } from 'ai';
-import { openai } from '@ai-sdk/openai';
-import { Pinecone, PineconeRecord } from '@pinecone-database/pinecone';
-import { Article } from '../parsers/types'; 
+import { Resource } from "sst";
+import { embed } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
+import { Pinecone, PineconeRecord } from "@pinecone-database/pinecone";
+import { Article } from "../parsers/types";
 
 export type GenerateEmbeddingsOptions = {
   article: Article;
@@ -14,65 +15,94 @@ export type SaveEmbeddingsOptions = {
   id: string;
 };
 
-// Verificación obligatoria de API key
-if (!process.env.PINECONE_API_KEY) {
-  throw new Error('PINECONE_API_KEY is required');
+// ✅ Verificación obligatoria de API keys usando SST Resources
+if (!Resource.OpenAIKey.value) {
+  throw new Error("OpenAIKey is required");
+}
+if (!Resource.PineconeApiKey.value) {
+  throw new Error("PineconeApiKey is required");
 }
 
-// Inicializar Pinecone
-const pinecone = new Pinecone({ apiKey: process.env.PINECONE_API_KEY });
-const indexName = 'article-embeddings';
+// ✅ Inicializar clientes con las claves desde SST Resources
+const pinecone = new Pinecone({ apiKey: Resource.PineconeApiKey.value });
+const openai = createOpenAI({
+  apiKey: Resource.OpenAIKey.value,
+});
+const indexName = "article-embeddings";
 let index: ReturnType<typeof pinecone.index>;
 
-// Función para inicializar embeddings (llamada explícita)
+/**
+ * Llamar antes de guardar o consultar embeddings.
+ */
 export async function initEmbeddings(): Promise<void> {
   await setupIndex();
 }
 
-// Crear índice si no existe y esperar a que esté listo
+/**
+ * Crear índice en Pinecone si no existe.
+ */
 async function setupIndex() {
   try {
-    const indexes = await pinecone.listIndexes();
-    if (!indexes.includes(indexName)) {
+    const response = await pinecone.listIndexes();
+    const existingNames = response.indexes?.map((idx) => idx.name) ?? [];
+
+    if (!existingNames.includes(indexName)) {
       await pinecone.createIndex({
         name: indexName,
         dimension: 1536,
-        metric: 'cosine',
-        waitUntilReady: true, // Esperar hasta que esté listo
+        metric: "cosine",
+        spec: {
+          serverless: {
+            cloud: "aws",
+            region: "us-east-1",
+          },
+        },
+        waitUntilReady: true,
       });
     }
+
     index = pinecone.index(indexName);
   } catch (error) {
-    console.error('Error setting up Pinecone index:', error);
-    throw new Error('Failed to initialize Pinecone index');
+    console.error("Error setting up Pinecone index:", error);
+    throw new Error("Failed to initialize Pinecone index");
   }
 }
 
-// Generar embeddings con OpenAI
+/**
+ * Genera un embedding para el texto de un artículo.
+ */
 export async function generateArticleEmbeddings(
   options: GenerateEmbeddingsOptions
 ): Promise<number[]> {
-  const embeddingModel = openai.embedding('text-embedding-ada-002');
-  const input = options.article.text.replaceAll('\n', ' ');
+  const input = options.article.text.replace(/\n/g, " ");
+
+  // ✅ Configurar el modelo de embedding con la API key
+  const embeddingModel = openai.embedding("text-embedding-ada-002");
+
   const { embedding } = await embed({
     model: embeddingModel,
     value: input,
   });
 
   if (embedding.length !== 1536) {
-    throw new Error('Generated embedding does not have expected length of 1536');
+    throw new Error(
+      "Generated embedding does not have expected length of 1536"
+    );
   }
 
   return embedding;
 }
 
-// Guardar embeddings en Pinecone
+/**
+ * Guarda un embedding en Pinecone.
+ */
 export async function saveArticleEmbeddings(
   options: SaveEmbeddingsOptions
 ): Promise<void> {
-  // Verificar que el índice esté inicializado
   if (!index) {
-    throw new Error('Pinecone index not initialised. Call initEmbeddings() first.');
+    throw new Error(
+      "Pinecone index not initialised. Call initEmbeddings() first."
+    );
   }
 
   try {
@@ -87,7 +117,11 @@ export async function saveArticleEmbeddings(
 
     await index.upsert([record]);
   } catch (error) {
-    console.error('Error saving embedding:', error);
+    console.error("Error saving embedding:", error);
     throw error;
   }
 }
+
+
+
+

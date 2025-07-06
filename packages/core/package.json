@@ -7,14 +7,18 @@
   "sideEffects": false,
   "scripts": {
     "db": "sst shell drizzle-kit",
-    "pad": "sst shell tsx ./src/pad.ts"
+    "pad": "sst shell tsx ./src/pad.ts",
+    "test-embedding": "sst shell -- tsx src/embedding/test-embedding.ts"
   },
   "exports": {
     "./*": "./src/*.ts"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.3.22",
     "@aws-sdk/client-eventbridge": "^3.804.0",
     "@libsql/client": "^0.15.4",
+    "@pinecone-database/pinecone": "^6.1.1",
+    "ai": "^4.3.16",
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
     "drizzle-orm": "^0.43.1",
