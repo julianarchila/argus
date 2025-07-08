@@ -1,6 +1,4 @@
-
 import * as cheerio from "cheerio";
-
 
 /**
  * Fetches HTML or XML content from a URL and loads it into a Cheerio parser instance
@@ -28,5 +26,4 @@ export async function cherrioFromUrl({
     return cheerio.load(document, { xmlMode: true });
   }
   return cheerio.load(document);
-
 }

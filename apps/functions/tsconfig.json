@@ -1,16 +1,9 @@
 {
   "extends": "@tsconfig/node20/tsconfig.json",
   "compilerOptions": {
-    "strict": true,
-    "exactOptionalPropertyTypes": true, // optional
-    "outDir": "dist",
-    "rootDir": "src",
-    "declaration": true,
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "lib": ["ES2022", "DOM", "DOM.Iterable", "esnext"],
-    "target": "ES2022"
-  },
-  "include": ["src/**/*", "sst-env.d.ts"]
+    "module": "esnext",
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
+    "noUncheckedIndexedAccess": true,
+  }
 }
-

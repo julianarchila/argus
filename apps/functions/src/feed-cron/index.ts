@@ -1,8 +1,8 @@
-import { executeFeedCron } from "@argus/core/jobs/feed-cron"
+import { Feed } from "@argus/core/feed";
 
 export const handler = async () => {
   try {
-    const result = await executeFeedCron()
+    const result = await Feed.processCron();
 
     return {
       statusCode: 200,
@@ -14,9 +14,9 @@ export const handler = async () => {
         processed: result.processed,
         newItems: result.newItems
       })
-    }
+    };
   } catch (error) {
-    console.error("Error processing feeds:", error)
+    console.error("Error processing feeds:", error);
 
     return {
       statusCode: 500,
@@ -27,6 +27,6 @@ export const handler = async () => {
         message: "Error processing feeds",
         error: error instanceof Error ? error.message : String(error)
       })
-    }
+    };
   }
-}
+};

@@ -18,9 +18,15 @@
 - **Infrastructure**: SST v3 for AWS serverless deployment
 - **Database**: Drizzle ORM with libSQL (Turso) database
 - **Runtime**: TypeScript with ESM modules on AWS Lambda
+- **Domain Module Pattern**: Following SST's domain-driven architecture with namespace organization
 
 ### Core Components
-- `packages/core/` - Shared business logic (database, events, parsers, jobs)
+- `packages/core/` - Shared business logic organized by domain
+  - `article/` - Article management domain
+  - `site/` - Site tracking domain
+  - `feed/` - Feed processing domain
+  - `parser/` - Content parsing domain
+  - `shared/` - Cross-domain utilities
 - `apps/functions/` - AWS Lambda functions (feed-cron, article-processor)
 - `apps/api/` - REST API (placeholder, not implemented)
 - `apps/web-extension/` - Browser extension (placeholder, not implemented)
@@ -28,13 +34,20 @@
 - `infra/` - SST infrastructure definitions
 
 ### Event Flow
-1. **Feed Cron** (every 2 hours in prod, 24 hours in dev) → scrapes XML feeds → publishes `articles.new` events
-2. **Article Processor** → receives events via `bus.subscriber()` → parses article content → stores in database → publishes `articles.processed` events
+1. **Feed Cron** (every 2 hours in prod, 24 hours in dev) → scrapes XML feeds → publishes `feed.articles.discovered` events
+2. **Event Handler** (single "fat lambda") → receives all events via `bus.subscriber()` → routes events based on type:
+   - `feed.articles.discovered` → parses article content → stores in database → publishes `article.created` events
+   - `article.created` → logs creation (future: embedding generation)
+   - `article.updated` → logs update (future: re-process embeddings)
+   - `article.processed` → logs processing (future: trigger ML pipeline, notifications)
 3. **Future**: Article processing → embedding generation → clustering → notifications
 
-### Job System
-- **Shared Business Logic**: Core job functions in `packages/core/src/jobs/`
-- **executeFeedCron()**: Shared function used by both scheduled Lambda and manual trigger script
+### Domain System
+- **Domain Boundaries**: Each business concept organized as a namespace module
+- **Feed.processCron()**: Shared function for feed processing used by both Lambda and scripts
+- **Article.create()**: Domain operation for creating articles with event publishing
+- **Parser.processArticle()**: Domain operation for parsing article content
+- **Site.updateLastProcessed()**: Domain operation for tracking site processing state
 - **Environment-aware**: Different schedules and limits for dev vs production
 - **Manual Triggering**: `pnpm run trigger-cron` for immediate testing without waiting for schedule
 
@@ -51,16 +64,18 @@ site_tracking: site_name, last_processed
 - **Extensible architecture**: Add new sites by implementing `SiteConfig` interface
 - **Current sites**: elTiempo, elEspectador (Colombian news)
 - **Parser types**: FeedParser (XML/RSS) + ArticleParser (HTML content extraction)
-- **Location**: `packages/core/src/parsers/sites/`
+- **Location**: `packages/core/src/parser/sites/`
 
 ## Event Bus System
 - **Architecture**: Uses SST's native event bus utilities (`sst/aws/bus` and `sst/event`)
 - **Bus**: `ArgusEventBus` with automatic event routing
-- **Events**: `articles.new`, `articles.processed`, `embeddings.generated`, `clusters.updated`
+- **Events**: `feed.articles.discovered`, `article.created`, `article.updated`, `article.processed`
 - **Type Safety**: SST's `event.builder()` with Zod validation and automatic metadata generation
 - **Publishing**: `bus.publish(Resource.ArgusEventBus, EventType, payload)`
 - **Consuming**: `bus.subscriber([EventTypes], handler)` with type-safe event handling
 - **Metadata**: Automatic correlation IDs, timestamps, versioning for observability
+- **Centralized Events**: Events are defined within each domain namespace using shared `defineEvent` utility
+- **Domain Integration**: Events accessible via `Article.Events.Created`, `Feed.Events.ArticlesDiscovered`, etc.
 
 ## Code Style
 - Use double quotes for strings
@@ -74,7 +89,10 @@ site_tracking: site_name, last_processed
 - Use `?.` optional chaining and `??` nullish coalescing
 - Type safety: enable `noUncheckedIndexedAccess` in tsconfig
 - **Event Bus**: Use SST's native utilities (`bus.publish()`, `bus.subscriber()`) - avoid custom event utilities
-- **Shared Logic**: Extract reusable business logic to `packages/core/src/jobs/` for consistency between Lambda handlers and scripts
+- **Domain Pattern**: Use namespace imports (`Article.create()`, `Feed.processCron()`) - avoid direct function imports
+- **Shared Logic**: Extract reusable business logic to domain namespaces for consistency
+- **Event Organization**: Events are defined within domain index files using centralized `defineEvent` utility from `core/src/event.ts`
+- **Event Access**: Access events via domain namespaces (e.g., `Article.Events.Created`) rather than separate event files
 
 ## Missing Features (Opportunities)
 - **API Layer**: No REST/GraphQL API for data access

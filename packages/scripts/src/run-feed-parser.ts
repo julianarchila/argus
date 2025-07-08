@@ -1,7 +1,5 @@
-import { Resource } from "sst"
-
-import { getSiteConfig } from "@argus/core/parsers/index"
-
+import { Resource } from "sst";
+import { getSiteConfig } from "@argus/core/parser/sites";
 
 // Get command line arguments (excluding 'node' and script name)
 const args = process.argv.slice(2);
@@ -15,17 +13,17 @@ if (args.length === 0) {
 // Get the first argument
 const siteName = args[0] || "";
 
-const siteConfig = getSiteConfig(siteName)
+const siteConfig = getSiteConfig(siteName);
 
 if (!siteConfig) {
-  console.error("Error: no configuration registered for " + siteName)
+  console.error("Error: no configuration registered for " + siteName);
   process.exit(1);
 }
 
-const res = await siteConfig.feedParser.parse()
+const res = await siteConfig.feedParser.parse();
 
 console.log({
   length: res.length,
   first5: res.slice(0, 5)
-})
+});
 

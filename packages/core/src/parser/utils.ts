@@ -32,7 +32,6 @@ export function createFeedParser(
   parseFunction: (root: cheerio.Root) => Promise<FeedItem[]> | FeedItem[]
 ): FeedParser {
   return {
-    siteName,
     parse: async () => {
       const $ = await cherrioFromUrl({ url: feedUrl, xml: true });
       return parseFunction($);
@@ -45,18 +44,16 @@ export function createFeedParser(
  */
 export function createArticleParser(
   siteName: string,
-  parseFunction: (root: cheerio.Root, url: string) => Promise<Omit<Article, "url" | "siteName">> | Omit<Article, "url" | "siteName">
+  parseFunction: (root: cheerio.Root, url: string) => Promise<Omit<Article, "url">> | Omit<Article, "url">
 ): ArticleParser {
   return {
-    siteName,
     parse: async (url: string) => {
       const $ = await cherrioFromUrl({ url });
       const articleData = await parseFunction($, url);
       
       return {
         ...articleData,
-        url,
-        siteName
+        url
       };
     }
   };

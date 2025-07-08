@@ -1,36 +1,39 @@
-import { Resource } from "sst"
-
-import { getSiteConfig } from "@argus/core/parsers/index"
-
+import { Resource } from "sst";
+import { Article } from "@argus/core/article";
+import { Parser } from "@argus/core/parser";
 
 // Get command line arguments (excluding 'node' and script name)
 const args = process.argv.slice(2);
 
 // Check if a value was provided
 if (args.length < 2) {
-  console.error("Error: you must provide a site name and a url")
+  console.error("Error: you must provide a site name and a url");
   process.exit(1);
 }
 
 // Get the first argument
 const siteName = args[0] || "";
-const url = args[1] || ""
-
-const siteConfig = getSiteConfig(siteName)
-
-if (!siteConfig) {
-  console.error("Error: no configuration registered for " + siteName)
-  process.exit(1);
-}
+const url = args[1] || "";
 
 try {
-  const res = await siteConfig.articleParser.parse(url)
+  const parsedArticle = await Parser.processArticle(url, siteName);
   
-  console.log({
-    article: res
-  })
+  // Use Article.create instead of Article.save (following SST pattern)
+  const savedArticle = await Article.create({
+    url,
+    title: parsedArticle.title,
+    text: parsedArticle.text,
+    markdown: parsedArticle.markdown,
+    site_name: siteName,
+    keywords: parsedArticle.keywords,
+    author: parsedArticle.author,
+    publication_date: new Date().toISOString(),
+    lastmod: new Date().toISOString(),
+  });
+
+  console.log("Article processed and saved:", savedArticle);
 } catch (error) {
-  console.error("Error parsing article:", error.message);
+  console.error("Article processing failed:", error);
   process.exit(1);
 }
 

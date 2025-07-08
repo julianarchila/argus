@@ -1,29 +1,5 @@
-import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, blob } from 'drizzle-orm/sqlite-core';
+// Combined schema file for drizzle-kit
+// This file imports all domain-specific schemas
 
-export const articlesTable = sqliteTable('articles', {
-  id: integer('id').primaryKey({ autoIncrement: true }),
-  url: text('url').notNull().unique(),
-  title: text('title'),
-  text: text('text').notNull(),
-  markdown: text('markdown').notNull(),
-  author: text('author'),
-  publication_date: text('publication_date'),
-  lastmod: text('lastmod'),
-  site_name: text('site_name').notNull(),
-  keywords: blob('keywords', { mode: 'json' }),
-  created_at: integer('created_at', { mode: 'timestamp' }).default(sql`(CURRENT_TIMESTAMP)`),
-});
-
-export type SelectArticle = typeof articlesTable.$inferSelect
-export type InsertArticle = typeof articlesTable.$inferInsert
-
-
-
-export const siteTrackingTable = sqliteTable('site_tracking', {
-  site_name: text('site_name').primaryKey(),
-  last_processed: integer('last_processed', { mode: 'timestamp' }),
-});
-
-export type SelectSiteTracking = typeof siteTrackingTable.$inferSelect
-export type InsertSiteTracking = typeof siteTrackingTable.$inferInsert  
+export * from "../article/schema.sql";
+export * from "../site/schema.sql";
