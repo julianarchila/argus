@@ -1,7 +1,6 @@
 import { bus } from "sst/aws/bus";
 import { Feed } from "@argus/core/feed";
 import { Article } from "@argus/core/article";
-import { Article as ArticleDomain } from "@argus/core/article";
 import { Parser } from "@argus/core/parser";
 
 export const handler = bus.subscriber(
@@ -76,7 +75,7 @@ async function processArticle(article: any, siteName: string) {
   const parsedArticle = await Parser.processArticle(article.url, siteName);
 
   // Store in database using namespace pattern
-  const savedArticle = await ArticleDomain.create({
+  const savedArticle = await Article.create({
     url: article.url,
     title: article.title,
     text: parsedArticle.text,
