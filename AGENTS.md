@@ -35,7 +35,11 @@
 
 ### Event Flow
 1. **Feed Cron** (every 2 hours in prod, 24 hours in dev) → scrapes XML feeds → publishes `feed.articles.discovered` events
-2. **Article Processor** → receives events via `bus.subscriber()` → parses article content → stores in database → publishes `article.created` events
+2. **Event Handler** (single "fat lambda") → receives all events via `bus.subscriber()` → routes events based on type:
+   - `feed.articles.discovered` → parses article content → stores in database → publishes `article.created` events
+   - `article.created` → logs creation (future: embedding generation)
+   - `article.updated` → logs update (future: re-process embeddings)
+   - `article.processed` → logs processing (future: trigger ML pipeline, notifications)
 3. **Future**: Article processing → embedding generation → clustering → notifications
 
 ### Domain System
@@ -70,6 +74,8 @@ site_tracking: site_name, last_processed
 - **Publishing**: `bus.publish(Resource.ArgusEventBus, EventType, payload)`
 - **Consuming**: `bus.subscriber([EventTypes], handler)` with type-safe event handling
 - **Metadata**: Automatic correlation IDs, timestamps, versioning for observability
+- **Centralized Events**: Events are defined within each domain namespace using shared `defineEvent` utility
+- **Domain Integration**: Events accessible via `Article.Events.Created`, `Feed.Events.ArticlesDiscovered`, etc.
 
 ## Code Style
 - Use double quotes for strings
@@ -85,6 +91,8 @@ site_tracking: site_name, last_processed
 - **Event Bus**: Use SST's native utilities (`bus.publish()`, `bus.subscriber()`) - avoid custom event utilities
 - **Domain Pattern**: Use namespace imports (`Article.create()`, `Feed.processCron()`) - avoid direct function imports
 - **Shared Logic**: Extract reusable business logic to domain namespaces for consistency
+- **Event Organization**: Events are defined within domain index files using centralized `defineEvent` utility from `core/src/event.ts`
+- **Event Access**: Access events via domain namespaces (e.g., `Article.Events.Created`) rather than separate event files
 
 ## Missing Features (Opportunities)
 - **API Layer**: No REST/GraphQL API for data access

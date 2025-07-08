@@ -1,9 +1,38 @@
 import { bus } from "sst/aws/bus";
 import { Resource } from "sst";
-import { Feed as FeedEvents } from "./events";
+import { z } from "zod";
+import { defineEvent } from "../event";
 import { Parser } from "../parser";
 
 export namespace Feed {
+  // Events (following SST pattern)
+  export const Events = {
+    ArticlesDiscovered: defineEvent(
+      "feed.articles.discovered",
+      z.object({
+        siteName: z.string(),
+        articles: z.array(
+          z.object({
+            url: z.string().url(),
+            title: z.string(),
+            publicationDate: z.string().datetime(),
+            lastModified: z.string().datetime().optional(),
+            keywords: z.string().optional(),
+          })
+        ),
+      })
+    ),
+    
+    ProcessingCompleted: defineEvent(
+      "feed.processing.completed",
+      z.object({
+        siteName: z.string(),
+        processedCount: z.number(),
+        totalCount: z.number(),
+      })
+    ),
+  };
+
   export interface CronResult {
     processed: number;
     newItems: number;
@@ -35,7 +64,7 @@ export namespace Feed {
     for (const result of results) {
       if (result.items.length > 0) {
         // Publish feed discovery event
-        await bus.publish(Resource.ArgusEventBus, FeedEvents.Events.ArticlesDiscovered, {
+        await bus.publish(Resource.ArgusEventBus, Events.ArticlesDiscovered, {
           siteName: result.siteName,
           articles: result.items.map(item => ({
             url: item.url,

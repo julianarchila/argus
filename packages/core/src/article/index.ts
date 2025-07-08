@@ -1,11 +1,42 @@
 import { eq } from "drizzle-orm";
 import { bus } from "sst/aws/bus";
 import { Resource } from "sst";
+import { z } from "zod";
 import { getDb } from "../shared/database";
 import { articlesTable, type InsertArticle, type SelectArticle } from "./schema.sql";
-import { Article as ArticleEvents } from "./events";
+import { defineEvent } from "../event";
 
 export namespace Article {
+  // Events (following SST pattern)
+  export const Events = {
+    Created: defineEvent(
+      "article.created",
+      z.object({
+        articleId: z.number(),
+        url: z.string().url(),
+        siteName: z.string(),
+      })
+    ),
+    
+    Updated: defineEvent(
+      "article.updated",
+      z.object({
+        articleId: z.number(),
+        url: z.string().url(),
+        siteName: z.string(),
+      })
+    ),
+    
+    Processed: defineEvent(
+      "article.processed",
+      z.object({
+        articleId: z.number(),
+        siteName: z.string(),
+        url: z.string().url(),
+      })
+    ),
+  };
+
   // Types first (following SST pattern)
   export type Insert = InsertArticle;
   export type Select = SelectArticle;
@@ -42,7 +73,7 @@ export namespace Article {
       .get();
 
       // Publish domain event (following SST event pattern)
-      await bus.publish(Resource.ArgusEventBus, ArticleEvents.Events.Created, {
+      await bus.publish(Resource.ArgusEventBus, Events.Created, {
         articleId: savedArticle.id,
         url: savedArticle.url,
         siteName: savedArticle.site_name,
@@ -85,7 +116,7 @@ export namespace Article {
         .get();
 
       // Publish domain event
-      await bus.publish(Resource.ArgusEventBus, ArticleEvents.Events.Updated, {
+      await bus.publish(Resource.ArgusEventBus, Events.Updated, {
         articleId: updatedArticle.id,
         url: updatedArticle.url,
         siteName: updatedArticle.site_name,

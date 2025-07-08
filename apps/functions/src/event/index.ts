@@ -1,6 +1,6 @@
 import { bus } from "sst/aws/bus";
-import { Feed } from "@argus/core/feed/events";
-import { Article } from "@argus/core/article/events";
+import { Feed } from "@argus/core/feed";
+import { Article } from "@argus/core/article";
 import { Article as ArticleDomain } from "@argus/core/article";
 import { Parser } from "@argus/core/parser";
 

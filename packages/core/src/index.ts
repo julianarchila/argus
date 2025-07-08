@@ -4,9 +4,8 @@ export { Site } from "./site";
 export { Feed } from "./feed";
 export { Parser } from "./parser";
 
-// Event exports
-export { Article as ArticleEvents } from "./article/events";
-export { Feed as FeedEvents } from "./feed/events";
+// Event utility export
+export { defineEvent } from "./event";
 
 // Utility exports
 export { getDb } from "./shared/database";
